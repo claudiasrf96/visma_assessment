@@ -2,69 +2,120 @@ package com.visma.freelanceexpenses.viewmodel
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.visma.freelanceexpenses.core.domain.model.Expense
-import com.visma.freelanceexpenses.core.domain.ExpenseDao
 import com.visma.freelanceexpenses.core.domain.repository.ExpenseRepository
 import com.visma.freelanceexpenses.view.expense_upsert.ExpenseUpsertEvent
-import com.visma.freelanceexpenses.view.expense_upsert.ExpenseUpsertState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ExpenseUpsertViewModel @Inject constructor(private val repository: ExpenseRepository)
+class ExpenseUpsertViewModel @Inject constructor(private val repository: ExpenseRepository,
+                                                 savedStateHandle: SavedStateHandle
+)
     : ViewModel() {
 
-    private val _state = mutableStateOf(ExpenseUpsertState())
+    private val _name = mutableStateOf("")
+    private val _imageLocation = mutableStateOf<String?>(null)
+    private val _description = mutableStateOf<String?>(null)
+    private val _currency = mutableStateOf("EUR")
+    private val _total = mutableStateOf(0.0)
+    private val _date = mutableStateOf("")
+    private val _category = mutableStateOf(0)
 
-    val state : State<ExpenseUpsertState> = _state
+    val name : State<String> = _name
+    val imageLocation : State<String?> = _imageLocation
+    val description : State<String?> = _description
+    val currency : State<String> = _currency
+    val total : State<Double> = _total
+    val date : State<String> = _date
+    val category : State<Int> = _category
+
+    private var currentExpenseId: Int? = null
+
+    init {
+        savedStateHandle.get<Int>("expenseId")?.let { expenseId ->
+            if(expenseId != -1) {
+                viewModelScope.launch {
+                    repository.getExpensesById(expenseId)?.also { expense ->
+                        currentExpenseId = expense.id
+                        _category.value = expense.category
+                        _currency.value = expense.currency
+                        _date.value = expense.date
+                        _description.value = expense.description
+                        _imageLocation.value = expense.imageLocation
+                        _name.value = expense.name
+                        _total.value = expense.total
+                    }
+                }
+            }
+        }
+    }
 
     fun onEvent(event: ExpenseUpsertEvent) {
         when(event){
             ExpenseUpsertEvent.SaveExpense -> {
                 viewModelScope.launch {
-                    val name = _state.value.name
-                    val currency = _state.value.currency
-                    val total = _state.value.total
+                    val name = _name.value
+                    val currency = currency.value
+                    val total = total.value
 
-                    if (name.isBlank() || currency.isBlank() || total <= 0.0) {
+                    if (name.isBlank() || currency.isBlank() || total <= 0.01) {
                         return@launch
                     }
-
-                    val expense = Expense(
+                    val expense = if(currentExpenseId == null)  Expense(
                         name,
-                        _state.value.imageLocation,
+                        imageLocation.value,
                         currency,
                         total,
-                        _state.value.description,
-                        _state.value.date,
-                        _state.value.category)
+                        description.value,
+                        date.value,
+                        category.value)
+                    else Expense(
+                        name,
+                        imageLocation.value,
+                        currency,
+                        total,
+                        description.value,
+                        date.value,
+                        category.value, currentExpenseId!!)
+
                     repository.upsertExpense(expense)
-                    _state.value = _state.value.copy(expense = expense)
+
                 }
             }
             is ExpenseUpsertEvent.SetCategory -> {
-                _state.value = _state.value.copy(category = event.category)
+                _category.value = event.category
             }
             is ExpenseUpsertEvent.SetCurrency -> {
-                _state.value = _state.value.copy(currency = event.currency)
+                _currency.value = event.currency
             }
             is ExpenseUpsertEvent.SetDate -> {
-                _state.value = _state.value.copy(date = event.date)
+                _date.value = event.date
             }
             is ExpenseUpsertEvent.SetDescription -> {
-                _state.value = _state.value.copy(description = event.description)
+                _description.value = event.description
             }
             is ExpenseUpsertEvent.SetImageLocation -> {
-                _state.value = _state.value.copy(imageLocation = event.imageLocation)
+                _imageLocation.value = event.imageLocation
             }
             is ExpenseUpsertEvent.SetName -> {
-                _state.value = _state.value.copy(name = event.name)
+                _name.value = event.name
             }
             is ExpenseUpsertEvent.SetTotal -> {
-                _state.value = _state.value.copy(total = event.total)
+                _total.value = event.total
+            }
+
+            ExpenseUpsertEvent.DeleteExpense -> {
+                if (currentExpenseId == null){
+                    return
+                }
+                viewModelScope.launch {
+                    repository.getExpensesById(currentExpenseId!!)
+                }
             }
         }
     }

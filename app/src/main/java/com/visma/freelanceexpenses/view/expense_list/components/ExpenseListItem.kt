@@ -43,7 +43,7 @@ fun ExpenseListItem(
         }) {
             Icon(
                 imageVector = Icons.Default.Delete,
-                contentDescription = "Delete contact"
+                contentDescription = "Delete Expense"
             )
         }
     }

@@ -9,4 +9,6 @@ sealed interface ExpenseUpsertEvent {
     data class SetDescription(val description: String) : ExpenseUpsertEvent
     data class SetDate(val date: String) : ExpenseUpsertEvent
     data class SetCategory(val category: Int) : ExpenseUpsertEvent
+    object DeleteExpense: ExpenseUpsertEvent
+
 }

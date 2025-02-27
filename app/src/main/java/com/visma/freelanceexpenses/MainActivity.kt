@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.visma.freelanceexpenses.core.app.Routes
 import com.visma.freelanceexpenses.ui.theme.FreelanceExpensesTheme
 import com.visma.freelanceexpenses.view.expense_list.ListExpensesScreenRoot
@@ -25,7 +27,7 @@ class MainActivity : ComponentActivity() {
             FreelanceExpensesTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = Routes.expenseListRoute) {
-                    composable(Routes.expenseListRoute){
+                    composable(route = Routes.expenseListRoute){
                         val viewModel = hiltViewModel<ExpenseListViewModel>()
 
                         ListExpensesScreenRoot(
@@ -35,15 +37,26 @@ class MainActivity : ComponentActivity() {
                             },
                             onExpenseClick = { expense ->
                                 // with expense object
-                                navController.navigate(Routes.expenseUpsertRoute)
+                                navController.navigate(Routes.expenseUpsertRoute +
+                                        "?expenseId=${expense.id}")
                             },
                             onEvent = viewModel::onEvent
                         )
                     }
 
-                    composable(Routes.expenseUpsertRoute) {
+                    composable(
+                        route = Routes.expenseUpsertRoute + "?expenseId={expenseId}",
+                        arguments = listOf(navArgument(
+                            name = "expenseId"
+                        ) {
+                            type = NavType.IntType
+                            defaultValue = -1
+                        })
+                    ) {
                         val viewModel = hiltViewModel<ExpenseUpsertViewModel>()
-                        UpsertExpenseScreen(viewModel.state.value, viewModel::onEvent)
+                        UpsertExpenseScreen(
+                            navController = navController,
+                            viewModel= viewModel)
                     }
                 }
             }

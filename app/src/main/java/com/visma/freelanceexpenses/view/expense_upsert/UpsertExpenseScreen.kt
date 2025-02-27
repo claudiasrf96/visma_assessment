@@ -13,33 +13,23 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.visma.freelanceexpenses.R
 import com.visma.freelanceexpenses.core.data.ExpenseCategory
 import com.visma.freelanceexpenses.core.data.currencyList
 import com.visma.freelanceexpenses.view.components.AppDropdown
 import com.visma.freelanceexpenses.viewmodel.ExpenseUpsertViewModel
 
-@Composable
-fun UpsertExpenseRoot(viewModel: ExpenseUpsertViewModel = hiltViewModel(),
-                      onEvent: (ExpenseUpsertEvent) -> Unit) {
-    val state = viewModel.state.value
-    UpsertExpenseScreen(
-        state = state,
-        onEvent = onEvent)
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpsertExpenseScreen(
-    state: ExpenseUpsertState,
-    onEvent: (ExpenseUpsertEvent) -> Unit,
+    navController: NavController,
+    viewModel: ExpenseUpsertViewModel = hiltViewModel()
 )
 {
     val categories = expenseCategoriesToStringList()
@@ -54,9 +44,9 @@ fun UpsertExpenseScreen(
                 .fillMaxHeight()
         ) {
             OutlinedTextField(
-                value = state.name,
+                value = viewModel.name.value,
                 onValueChange = {
-                    onEvent(ExpenseUpsertEvent.SetName(it))
+                    viewModel.onEvent(ExpenseUpsertEvent.SetName(it))
                 },
                 label = {
                     Text(text = stringResource(id = R.string.name))
@@ -65,16 +55,16 @@ fun UpsertExpenseScreen(
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = stringResource(id = R.string.currency))
             AppDropdown(itemsList = currencies, onItemClick = {
-                    index -> onEvent(ExpenseUpsertEvent.SetCurrency(currencies[index]))
+                    index -> viewModel.onEvent(ExpenseUpsertEvent.SetCurrency(currencies[index]))
             }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(modifier = Modifier.fillMaxWidth(),
-                value = state.total.toString(),
+                value = viewModel.total.value.toString(),
                 onValueChange = {
                     val pattern = Regex("^\\d+\$")
                     if (it.isEmpty() || it.matches(pattern)) {
                         val totalVal = it.toDouble()
-                        onEvent(ExpenseUpsertEvent.SetTotal(totalVal))
+                        viewModel.onEvent(ExpenseUpsertEvent.SetTotal(totalVal))
                     }
                 },
                 label = {
@@ -83,9 +73,9 @@ fun UpsertExpenseScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
-                value = state.date,
+                value = viewModel.date.value,
                 onValueChange = {
-                    onEvent(ExpenseUpsertEvent.SetDate(it))
+                    viewModel.onEvent(ExpenseUpsertEvent.SetDate(it))
                 },
                 label = {
                     Text(text = stringResource(id = R.string.date))
@@ -94,14 +84,14 @@ fun UpsertExpenseScreen(
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = stringResource(id = R.string.category))
             AppDropdown(itemsList = categories, onItemClick = {
-                    index -> onEvent(ExpenseUpsertEvent.SetCategory(index))
+                    index -> viewModel.onEvent(ExpenseUpsertEvent.SetCategory(index))
 
             }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
-                value = state.description ?: "",
+                value = viewModel.description.value ?: "",
                 onValueChange = {
-                    onEvent(ExpenseUpsertEvent.SetCurrency(it))
+                    viewModel.onEvent(ExpenseUpsertEvent.SetCurrency(it))
                 },
                 label = {
                     Text(text = stringResource(id = R.string.description))
