@@ -15,6 +15,7 @@ import com.visma.freelanceexpenses.viewmodel.ExpenseListViewModel
 import com.visma.freelanceexpenses.viewmodel.ExpenseUpsertViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
