@@ -1,4 +1,22 @@
 <resources>
     <string name="app_name">FreelanceExpenses</string>
 
+    <string name="no_category">No Category</string>
+    <string name="transportation">Transportation</string>
+    <string name="office">Office</string>
+    <string name="meals">Meals</string>
+    <string name="communications">Communications</string>
+    <string name="bills">Bills</string>
+
+    <string name="date">Date</string>
+    <string name="name">Name</string>
+    <string name="total">Total</string>
+    <string name="image">Image</string>
+    <string name="currency">Currency</string>
+    <string name="description">Description</string>
+    <string name="category">Category</string>
+
+    <string name="welcome">Welcome to your expense app</string>
+
+    <string name="order_by">Order by</string>
 </resources>
