@@ -23,6 +23,29 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             FreelanceExpensesTheme {
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = Routes.expenseListRoute) {
+                    composable(Routes.expenseListRoute){
+                        val viewModel = hiltViewModel<ExpenseListViewModel>()
+
+                        ListExpensesScreenRoot(
+                            viewModel = viewModel,
+                            onExpenseAddClick = {
+                                navController.navigate(Routes.expenseUpsertRoute)
+                            },
+                            onExpenseClick = { expense ->
+                                // with expense object
+                                navController.navigate(Routes.expenseUpsertRoute)
+                            },
+                            onEvent = viewModel::onEvent
+                        )
+                    }
+
+                    composable(Routes.expenseUpsertRoute) {
+                        val viewModel = hiltViewModel<ExpenseUpsertViewModel>()
+                        UpsertExpenseScreen(viewModel.state.value, viewModel::onEvent)
+                    }
+                }
             }
         }
     }
