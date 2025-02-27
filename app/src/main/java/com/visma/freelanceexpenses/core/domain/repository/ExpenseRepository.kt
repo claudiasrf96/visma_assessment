@@ -14,6 +14,4 @@ interface ExpenseRepository {
 
     fun getExpenses(): Flow<List<Expense>>
 
-    suspend fun deleteWithId(id: Int)
-
 }

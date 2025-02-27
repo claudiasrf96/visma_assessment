@@ -5,11 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,8 +18,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -34,7 +35,6 @@ import com.visma.freelanceexpenses.ui.theme.DesertWhite
 import com.visma.freelanceexpenses.ui.theme.SandYellow
 import com.visma.freelanceexpenses.view.components.AppDropdown
 import com.visma.freelanceexpenses.view.expense_list.components.ExpenseList
-import com.visma.freelanceexpenses.view.expense_upsert.ExpenseUpsertEvent
 import com.visma.freelanceexpenses.viewmodel.ExpenseListViewModel
 
 @Composable
@@ -59,6 +59,9 @@ fun ListExpensesScreen(
     onEvent: (ExpenseListEvent) -> Unit
 ) {
     val sortTypes = sortTypeToStringList()
+    var selectedSortTypeIndex by remember {
+        mutableStateOf(0)
+    }
 
     Column (modifier = Modifier
         .fillMaxSize()
@@ -76,7 +79,8 @@ fun ListExpensesScreen(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface)
                 Spacer(modifier = Modifier.height(20.dp))
-                Row (modifier =  Modifier.fillMaxWidth()){
+                Row (verticalAlignment = Alignment.CenterVertically,
+                    modifier =  Modifier.fillMaxWidth()){
                     IconButton(
                         onClick = { onAddClick() },
                         modifier = Modifier
@@ -97,15 +101,30 @@ fun ListExpensesScreen(
                             contentDescription = "Add expense")
                     }
                     Spacer(modifier = Modifier.width(5.dp))
-                    Column(modifier = Modifier.fillMaxHeight(0.08f)) {
+                    Column(modifier = Modifier.requiredHeight(70.dp)) {
                         Text(text = stringResource(id = R.string.order_by))
-                        AppDropdown(itemsList = sortTypes, onItemClick = {}, modifier = Modifier.weight(0.1f))
+                        Spacer(modifier = Modifier.height(10.dp))
+                        AppDropdown(itemsList = sortTypes,
+                            selectedPosition = selectedSortTypeIndex,
+                            onItemClick = { index ->
+                                selectedSortTypeIndex = index
+                                onEvent(ExpenseListEvent.SortExpenses(getSortType(index)))
+                                },
+                            modifier = Modifier.requiredHeight(50.dp))
                     }
 
                     Spacer(modifier = Modifier.width(5.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                ExpenseList(expenses = state.expenses, onExpenseClick = { onExpenseClick(it)})
+                if (state.expenses.isEmpty()) {
+                    Text(text = stringResource(id = R.string.no_expenses),
+                        style = MaterialTheme.typography.titleLarge)
+                } else {
+                    ExpenseList(expenses = state.expenses,
+                        onExpenseClick = { onExpenseClick(it)},
+                        onDeleteClick = onEvent)
+                }
+
             }
 
         }
@@ -127,4 +146,14 @@ private fun sortTypeToStringList() : List<String>{
         resultList.add(typeName)
     }
     return resultList
+}
+
+private fun getSortType(index: Int) : SortType{
+    return when (index) {
+        0 -> SortType.DATE
+        1 -> SortType.NAME
+        2 -> SortType.TOTAL
+        else -> SortType.DATE
+    }
+
 }

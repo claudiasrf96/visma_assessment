@@ -10,6 +10,8 @@ import com.visma.freelanceexpenses.core.domain.repository.ExpenseRepository
 import com.visma.freelanceexpenses.view.expense_upsert.ExpenseUpsertEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,7 +25,7 @@ class ExpenseUpsertViewModel @Inject constructor(private val repository: Expense
     private val _description = mutableStateOf<String?>(null)
     private val _currency = mutableStateOf("EUR")
     private val _total = mutableStateOf(0.0)
-    private val _date = mutableStateOf("")
+    private val _date = mutableStateOf(LocalDate.now().format(DateTimeFormatter.ISO_DATE))
     private val _category = mutableStateOf(0)
 
     val name : State<String> = _name
@@ -107,15 +109,6 @@ class ExpenseUpsertViewModel @Inject constructor(private val repository: Expense
             }
             is ExpenseUpsertEvent.SetTotal -> {
                 _total.value = event.total
-            }
-
-            ExpenseUpsertEvent.DeleteExpense -> {
-                if (currentExpenseId == null){
-                    return
-                }
-                viewModelScope.launch {
-                    repository.getExpensesById(currentExpenseId!!)
-                }
             }
         }
     }

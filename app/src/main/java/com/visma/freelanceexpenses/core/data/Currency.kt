@@ -9,3 +9,12 @@ fun currencyList() : List<Currency> {
         Currency("GBP", "£")
     )
 }
+
+fun currencyIndex(currencyCode: String) : Int {
+    return when(currencyCode) {
+        "EUR" -> 0
+        "USD" -> 1
+        "GBP" -> 2
+        else -> 0
+    }
+}

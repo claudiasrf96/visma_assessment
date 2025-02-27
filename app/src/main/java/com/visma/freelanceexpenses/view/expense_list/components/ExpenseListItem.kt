@@ -1,5 +1,6 @@
 package com.visma.freelanceexpenses.view.expense_list.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +22,8 @@ import com.visma.freelanceexpenses.view.expense_list.ExpenseListEvent
 @Composable
 fun ExpenseListItem(
     expense: Expense,
-    onClick: (ExpenseListEvent) -> Unit
+    onClickExpense: (Expense) -> Unit,
+    onClickDelete: (ExpenseListEvent) -> Unit
 ) {
     val expenseCurrencySymbol =
         currencyList().find { c -> c.currencyCode == expense.currency }?.currencySymbol ?: ""
@@ -30,7 +32,7 @@ fun ExpenseListItem(
         modifier = Modifier.fillMaxWidth().padding(all = 5.dp)
     ) {
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).clickable { onClickExpense(expense) }
         ) {
             Text(
                 text = expense.name,
@@ -39,7 +41,7 @@ fun ExpenseListItem(
             Text(text = "${expense.total} $expenseCurrencySymbol", fontSize = 12.sp)
         }
         IconButton(onClick = {
-            onClick(ExpenseListEvent.DeleteExpense(expense))
+            onClickDelete(ExpenseListEvent.DeleteExpense(expense))
         }) {
             Icon(
                 imageVector = Icons.Default.Delete,

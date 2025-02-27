@@ -56,7 +56,7 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
     }
 
     private fun getExpenses(sortType: SortType) {
-        /*getExpensesJob?.cancel()
+        getExpensesJob?.cancel()
         getExpensesJob = mapExpenseList(sortType)
             .onEach { expenses ->
                 _state.value = state.value.copy(
@@ -64,9 +64,9 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
                     sortType = sortType
                 )
             }
-            .launchIn(viewModelScope)*/
+            .launchIn(viewModelScope)
 
-        val expenses = listOf(
+        /*val expenses = listOf(
             Expense(name = "My expense", currency = "EUR", total = 250.5, date = "2025-01-25", category = 0, id = 1),
             Expense(name = "My second expense", currency = "EUR", total = 100.0, date = "2025-01-30", category = 3, id = 2)
         )
@@ -74,15 +74,15 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
         _state.value = state.value.copy(
             expenses = expenses,
             sortType = sortType
-        )
+        )*/
     }
 
     private fun mapExpenseList(sortType: SortType) : Flow<List<Expense>> {
         return repository.getExpenses().map { expenses ->
             when(sortType){
-                SortType.DATE -> expenses.sortedByDescending { it.date }
-                SortType.NAME -> expenses.sortedByDescending { it.name }
-                SortType.TOTAL -> expenses.sortedByDescending { it.total }
+                SortType.DATE -> expenses.sortedBy { it.date }
+                SortType.NAME -> expenses.sortedBy { it.name }
+                SortType.TOTAL -> expenses.sortedBy { it.total }
             }
         }
     }

@@ -13,12 +13,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.visma.freelanceexpenses.core.domain.model.Expense
+import com.visma.freelanceexpenses.view.expense_list.ExpenseListEvent
 
 
 @Composable
 fun ExpenseList(
     expenses: List<Expense>,
     onExpenseClick: (Expense) -> Unit,
+    onDeleteClick: (ExpenseListEvent) -> Unit,
     modifier: Modifier = Modifier,
     scrollState: LazyListState = rememberLazyListState()
 ) {
@@ -36,7 +38,8 @@ fun ExpenseList(
         ) { expense ->
             ExpenseListItem(
                 expense = expense,
-                onClick = { onExpenseClick(expense) }
+                onClickExpense = { onExpenseClick(expense) },
+                onClickDelete = onDeleteClick
             )
         }
     }

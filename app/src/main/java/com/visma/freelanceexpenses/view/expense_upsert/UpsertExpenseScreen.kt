@@ -1,19 +1,41 @@
 package com.visma.freelanceexpenses.view.expense_upsert
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -21,11 +43,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.visma.freelanceexpenses.R
 import com.visma.freelanceexpenses.core.data.ExpenseCategory
+import com.visma.freelanceexpenses.core.data.currencyIndex
 import com.visma.freelanceexpenses.core.data.currencyList
+import com.visma.freelanceexpenses.ui.theme.SandYellow
 import com.visma.freelanceexpenses.view.components.AppDropdown
+import com.visma.freelanceexpenses.view.components.DatePickerModal
 import com.visma.freelanceexpenses.viewmodel.ExpenseUpsertViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UpsertExpenseScreen(
     navController: NavController,
@@ -34,8 +61,22 @@ fun UpsertExpenseScreen(
 {
     val categories = expenseCategoriesToStringList()
     val currencies = currencyList().map { c -> c.currencyCode }
+    var showModal by remember { mutableStateOf(false) }
+    val selectedDate by remember { mutableStateOf<Long?>(null) }
 
     Surface{
+        if (showModal) {
+            DatePickerModal(
+                onDateSelected = {
+                    if (it != null){
+                        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val date = formatter.format(Date(it))
+                        viewModel.onEvent(ExpenseUpsertEvent.SetDate(date))
+                    }
+                },
+                onDismiss = { showModal = false }
+            )
+        }
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
@@ -43,6 +84,24 @@ fun UpsertExpenseScreen(
                 .fillMaxWidth()
                 .fillMaxHeight()
         ) {
+            Row {
+                Button(onClick = { navController.navigateUp() },
+                    modifier= Modifier.size(30.dp),
+                    shape = CircleShape,
+                    border= BorderStroke(1.dp, SandYellow),
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = SandYellow)
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(id = R.string.go_back),
+                        modifier = Modifier.size(15.dp))
+                }
+                Spacer(modifier = Modifier.width(20.dp))
+                Text(text = stringResource(id = R.string.expense),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface)
+            }
+
             OutlinedTextField(
                 value = viewModel.name.value,
                 onValueChange = {
@@ -54,18 +113,17 @@ fun UpsertExpenseScreen(
             )
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = stringResource(id = R.string.currency))
-            AppDropdown(itemsList = currencies, onItemClick = {
+            AppDropdown(itemsList = currencies,
+                selectedPosition = currencyIndex(viewModel.currency.value),
+                onItemClick = {
                     index -> viewModel.onEvent(ExpenseUpsertEvent.SetCurrency(currencies[index]))
             }, modifier = Modifier.fillMaxWidth())
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(modifier = Modifier.fillMaxWidth(),
                 value = viewModel.total.value.toString(),
                 onValueChange = {
-                    val pattern = Regex("^\\d+\$")
-                    if (it.isEmpty() || it.matches(pattern)) {
-                        val totalVal = it.toDouble()
-                        viewModel.onEvent(ExpenseUpsertEvent.SetTotal(totalVal))
-                    }
+                    val totalVal = it.toDouble()
+                    viewModel.onEvent(ExpenseUpsertEvent.SetTotal(totalVal))
                 },
                 label = {
                     Text(text = stringResource(id = R.string.total))
@@ -74,16 +132,30 @@ fun UpsertExpenseScreen(
             Spacer(modifier = Modifier.height(10.dp))
             OutlinedTextField(
                 value = viewModel.date.value,
-                onValueChange = {
-                    viewModel.onEvent(ExpenseUpsertEvent.SetDate(it))
-                },
+                onValueChange = { },
+                readOnly = true,
                 label = {
                     Text(text = stringResource(id = R.string.date))
-                }, modifier = Modifier.fillMaxWidth()
+                }, trailingIcon = {
+                    Icon(Icons.Default.DateRange, contentDescription = stringResource(id = R.string.select_date))
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .pointerInput(selectedDate) {
+                        awaitEachGesture {
+                            awaitFirstDown(pass = PointerEventPass.Initial)
+                            val upEvent = waitForUpOrCancellation(pass = PointerEventPass.Initial)
+                            if (upEvent != null) {
+                                showModal = true
+                            }
+                        }
+                    }
             )
+
             Spacer(modifier = Modifier.height(10.dp))
             Text(text = stringResource(id = R.string.category))
-            AppDropdown(itemsList = categories, onItemClick = {
+            AppDropdown(itemsList = categories, selectedPosition = viewModel.category.value,
+                onItemClick = {
                     index -> viewModel.onEvent(ExpenseUpsertEvent.SetCategory(index))
 
             }, modifier = Modifier.fillMaxWidth())
@@ -98,9 +170,36 @@ fun UpsertExpenseScreen(
                 }, modifier = Modifier.fillMaxWidth()
             )
 
-            // TODO: Add button for image and image preview
+            if (viewModel.imageLocation.value == null){
+                Button(onClick = { addPhotoFromCamera() }) {
+                    Text(
+                        text = stringResource(id = R.string.add_expense_invoice_photo),
+                        color = Color.White)
+                }
+            }
+
+            if (viewModel.imageLocation.value != null) {
+                /*val painter = painter(data = File(viewModel.imageLocation.value!!))
+                Image(
+                    painter = painter,
+                    contentDescription = null)*/
+            }
+
+            Spacer(modifier = Modifier.height(30.dp))
+            Button(onClick = {
+                viewModel.onEvent(ExpenseUpsertEvent.SaveExpense)
+                navController.navigateUp()
+            }) {
+                Text(
+                    text = stringResource(id = R.string.save_expense),
+                    color = Color.White)
+            }
         }
     }
+
+}
+
+fun addPhotoFromCamera(){
 
 }
 

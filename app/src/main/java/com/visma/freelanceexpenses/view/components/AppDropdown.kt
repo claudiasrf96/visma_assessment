@@ -31,14 +31,11 @@ import com.visma.freelanceexpenses.R
 @Composable
 fun AppDropdown(
     itemsList: List<String>,
+    selectedPosition : Int,
     onItemClick: (Int) -> Unit,
     modifier: Modifier) {
     var isDropDownExpanded by remember {
         mutableStateOf(false)
-    }
-
-    var itemPosition by remember {
-        mutableStateOf(0)
     }
 
     Box(modifier= modifier.border(
@@ -59,7 +56,7 @@ fun AppDropdown(
                     isDropDownExpanded = true
                 }
         ) {
-            Text(itemsList[itemPosition],
+            Text(itemsList[selectedPosition],
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface)
@@ -82,7 +79,6 @@ fun AppDropdown(
                 },
                     onClick = {
                         isDropDownExpanded = false
-                        itemPosition = index
                         onItemClick(index)
                     })
             }
