@@ -1,6 +1,7 @@
 package com.visma.freelanceexpenses.view.expense_upsert
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
@@ -28,20 +31,27 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.visma.freelanceexpenses.R
+import com.visma.freelanceexpenses.core.app.ArgumentNames
 import com.visma.freelanceexpenses.core.data.ExpenseCategory
 import com.visma.freelanceexpenses.core.data.currencyIndex
 import com.visma.freelanceexpenses.core.data.currencyList
@@ -49,6 +59,7 @@ import com.visma.freelanceexpenses.ui.theme.SandYellow
 import com.visma.freelanceexpenses.view.components.AppDropdown
 import com.visma.freelanceexpenses.view.components.DatePickerModal
 import com.visma.freelanceexpenses.viewmodel.ExpenseUpsertViewModel
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -56,13 +67,24 @@ import java.util.Locale
 @Composable
 fun UpsertExpenseScreen(
     navController: NavController,
-    viewModel: ExpenseUpsertViewModel = hiltViewModel()
+    viewModel: ExpenseUpsertViewModel = hiltViewModel(),
+    onClickAddPhoto: () -> Unit
 )
 {
+    val scrollState = rememberScrollState()
+
     val categories = expenseCategoriesToStringList()
     val currencies = currencyList().map { c -> c.currencyCode }
     var showModal by remember { mutableStateOf(false) }
     val selectedDate by remember { mutableStateOf<Long?>(null) }
+
+    val backStackEntry = navController.currentBackStackEntryAsState().value
+    val savedStateHandle = backStackEntry?.savedStateHandle
+    val uri = savedStateHandle?.get<String>(ArgumentNames.photoUri)
+    if (uri != null) {
+        val photoUri = if(uri.isBlank() ?: true) null else uri
+        viewModel.onEvent(ExpenseUpsertEvent.SetImageLocation(photoUri))
+    }
 
     Surface{
         if (showModal) {
@@ -83,6 +105,7 @@ fun UpsertExpenseScreen(
                 .padding(all = 10.dp)
                 .fillMaxWidth()
                 .fillMaxHeight()
+                .verticalScroll(scrollState)
         ) {
             Row {
                 Button(onClick = { navController.navigateUp() },
@@ -170,23 +193,30 @@ fun UpsertExpenseScreen(
                 }, modifier = Modifier.fillMaxWidth()
             )
 
-            if (viewModel.imageLocation.value == null){
-                Button(onClick = { addPhotoFromCamera() }) {
-                    Text(
-                        text = stringResource(id = R.string.add_expense_invoice_photo),
-                        color = Color.White)
-                }
-            }
-
             if (viewModel.imageLocation.value != null) {
-                /*val painter = painter(data = File(viewModel.imageLocation.value!!))
+                val file = File(viewModel.imageLocation.value!!)
+                val painter = rememberAsyncImagePainter(file)
+
                 Image(
                     painter = painter,
-                    contentDescription = null)*/
+                    contentDescription = stringResource(id = R.string.invoice_image),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp),
+                    contentScale = ContentScale.Crop
+                )
             }
 
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = { onClickAddPhoto() }) {
+                Text(
+                    text = stringResource(id = R.string.add_expense_invoice_photo),
+                    color = Color.White)
+            }
+
+
             Spacer(modifier = Modifier.height(30.dp))
-            Button(onClick = {
+            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
                 viewModel.onEvent(ExpenseUpsertEvent.SaveExpense)
                 navController.navigateUp()
             }) {
@@ -196,10 +226,6 @@ fun UpsertExpenseScreen(
             }
         }
     }
-
-}
-
-fun addPhotoFromCamera(){
 
 }
 

@@ -28,6 +28,8 @@
     <string name="cancel">Cancel</string>
     <string name="add_expense_invoice_photo">Add invoice photo</string>
     <string name="save_expense">Save Expense</string>
+    <string name="take_photo">Take photo</string>
 
     <string name="no_expenses">You don\'t have expenses yet! Add one :)</string>
+    <string name="invoice_image">Invoice Image</string>
 </resources>

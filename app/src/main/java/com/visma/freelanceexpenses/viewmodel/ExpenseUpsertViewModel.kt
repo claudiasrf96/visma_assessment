@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.visma.freelanceexpenses.core.app.ArgumentNames
 import com.visma.freelanceexpenses.core.domain.model.Expense
 import com.visma.freelanceexpenses.core.domain.repository.ExpenseRepository
 import com.visma.freelanceexpenses.view.expense_upsert.ExpenseUpsertEvent
@@ -39,7 +40,7 @@ class ExpenseUpsertViewModel @Inject constructor(private val repository: Expense
     private var currentExpenseId: Int? = null
 
     init {
-        savedStateHandle.get<Int>("expenseId")?.let { expenseId ->
+        savedStateHandle.get<Int>(ArgumentNames.expenseId)?.let { expenseId ->
             if(expenseId != -1) {
                 viewModelScope.launch {
                     repository.getExpensesById(expenseId)?.also { expense ->
@@ -55,6 +56,8 @@ class ExpenseUpsertViewModel @Inject constructor(private val repository: Expense
                 }
             }
         }
+        val photoUri = savedStateHandle.get<String>(ArgumentNames.photoUri)
+        _imageLocation.value = if(photoUri?.isBlank() ?: true) null else photoUri
     }
 
     fun onEvent(event: ExpenseUpsertEvent) {

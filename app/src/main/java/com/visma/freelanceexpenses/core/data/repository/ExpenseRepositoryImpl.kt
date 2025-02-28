@@ -22,8 +22,4 @@ class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
     override fun getExpenses(): Flow<List<Expense>>{
         return dao.getAllExpenses()
     }
-
-    override suspend fun deleteWithId(id: Int) {
-        dao.deleteWithId(id)
-    }
 }

@@ -13,8 +13,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.visma.freelanceexpenses.core.app.ArgumentNames
 import com.visma.freelanceexpenses.core.app.Routes
 import com.visma.freelanceexpenses.ui.theme.FreelanceExpensesTheme
+import com.visma.freelanceexpenses.view.camera.CameraPreview
 import com.visma.freelanceexpenses.view.expense_list.ListExpensesScreenRoot
 import com.visma.freelanceexpenses.view.expense_upsert.UpsertExpenseScreen
 import com.visma.freelanceexpenses.viewmodel.ExpenseListViewModel
@@ -30,7 +32,8 @@ class MainActivity : ComponentActivity() {
         val permissions = arrayOf(
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE
         )
 
         val hasPermissions = permissions.all {
@@ -68,18 +71,31 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable(
-                        route = Routes.expenseUpsertRoute + "?expenseId={expenseId}",
+                        route = Routes.expenseUpsertRoute +
+                                "?${ArgumentNames.expenseId}={${ArgumentNames.expenseId}}" +
+                                "&${ArgumentNames.photoUri}={${ArgumentNames.photoUri}}",
                         arguments = listOf(navArgument(
-                            name = "expenseId"
+                            name = ArgumentNames.expenseId
                         ) {
                             type = NavType.IntType
                             defaultValue = -1
+                        }, navArgument(
+                            name = ArgumentNames.photoUri
+                        ) {
+                            type = NavType.StringType
+                            defaultValue = ""
                         })
                     ) {
                         val viewModel = hiltViewModel<ExpenseUpsertViewModel>()
                         UpsertExpenseScreen(
                             navController = navController,
-                            viewModel= viewModel)
+                            viewModel= viewModel, onClickAddPhoto = {
+                                navController.navigate(Routes.camera_screen)
+                            })
+                    }
+
+                    composable(route = Routes.camera_screen){
+                        CameraPreview(navController)
                     }
                 }
             }
