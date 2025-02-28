@@ -1,6 +1,8 @@
 package com.visma.freelanceexpenses.view.camera
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -18,7 +20,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,6 +46,14 @@ fun CameraPreview(
     val context: Context = LocalContext.current
     val lifecycleOwner: LifecycleOwner = LocalLifecycleOwner.current
     val cameraController: LifecycleCameraController = remember { LifecycleCameraController(context) }
+    var hasPermission by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        hasPermission = checkCameraPermission(context)
+        if (!hasPermission) {
+            navController.navigateUp()
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -98,4 +112,11 @@ fun capturePhoto(context: Context,
             }
         }
     )
+}
+
+private fun checkCameraPermission(context: Context): Boolean {
+    return ContextCompat.checkSelfPermission(
+        context,
+        Manifest.permission.CAMERA
+    ) == PackageManager.PERMISSION_GRANTED
 }
