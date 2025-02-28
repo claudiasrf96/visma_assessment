@@ -28,6 +28,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.visma.freelanceexpenses.R
 import com.visma.freelanceexpenses.core.domain.model.Expense
 import com.visma.freelanceexpenses.ui.theme.DarkBlue
@@ -62,6 +64,8 @@ fun ListExpensesScreen(
     var selectedSortTypeIndex by remember {
         mutableStateOf(0)
     }
+
+    val expensesLazyPageItems : LazyPagingItems<Expense> = state.expenses.collectAsLazyPagingItems()
 
     Column (modifier = Modifier
         .fillMaxSize()
@@ -116,11 +120,11 @@ fun ListExpensesScreen(
                     Spacer(modifier = Modifier.width(5.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                if (state.expenses.isEmpty()) {
+                if (expensesLazyPageItems.itemCount == 0) {
                     Text(text = stringResource(id = R.string.no_expenses),
                         style = MaterialTheme.typography.titleLarge)
                 } else {
-                    ExpenseList(expenses = state.expenses,
+                    ExpenseList(expenses = expensesLazyPageItems,
                         onExpenseClick = { onExpenseClick(it)},
                         onDeleteClick = onEvent)
                 }

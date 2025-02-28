@@ -1,9 +1,9 @@
 package com.visma.freelanceexpenses.core.data.repository
 
+import androidx.paging.PagingSource
 import com.visma.freelanceexpenses.core.domain.ExpenseDao
 import com.visma.freelanceexpenses.core.domain.model.Expense
 import com.visma.freelanceexpenses.core.domain.repository.ExpenseRepository
-import com.visma.freelanceexpenses.view.expense_list.SortType
 import kotlinx.coroutines.flow.Flow
 
 class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
@@ -22,4 +22,18 @@ class ExpenseRepositoryImpl(private val dao: ExpenseDao) : ExpenseRepository {
     override fun getExpenses(): Flow<List<Expense>>{
         return dao.getAllExpenses()
     }
+
+    override fun getExpensesOrderByDatePaged(): PagingSource<Int, Expense> {
+        return dao.getExpensesOrderedByDatePaged()
+    }
+
+    override fun getExpensesOrderByNamePaged(): PagingSource<Int, Expense> {
+        return dao.getExpensesOrderedByNamePaged()
+    }
+
+    override fun getExpensesOrderByTotalPaged(): PagingSource<Int, Expense> {
+        return dao.getExpensesOrderedByTotalPaged()
+    }
+
+
 }

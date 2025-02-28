@@ -77,6 +77,7 @@ dependencies {
     implementation("androidx.room:room-runtime:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
+    implementation ("androidx.room:room-paging:2.4.3")
 
     //Dagger - Hilt
     implementation ("com.google.dagger:hilt-android:2.51.1")
@@ -93,4 +94,7 @@ dependencies {
     implementation ("androidx.camera:camera-view:1.0.0-alpha06")
 
     implementation ("io.coil-kt:coil-compose:2.2.2")
+
+    implementation ("androidx.paging:paging-runtime:3.1.1")
+    implementation ("androidx.paging:paging-compose:3.3.6")
 }

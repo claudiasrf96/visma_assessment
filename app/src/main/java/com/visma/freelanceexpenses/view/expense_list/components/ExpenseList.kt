@@ -12,13 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import com.visma.freelanceexpenses.core.domain.model.Expense
 import com.visma.freelanceexpenses.view.expense_list.ExpenseListEvent
 
 
 @Composable
 fun ExpenseList(
-    expenses: List<Expense>,
+    expenses: LazyPagingItems<Expense>,
     onExpenseClick: (Expense) -> Unit,
     onDeleteClick: (ExpenseListEvent) -> Unit,
     modifier: Modifier = Modifier,
@@ -31,16 +34,18 @@ fun ExpenseList(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         items(
-            items = expenses,
-            key = {
-                it.id
+            count = expenses.itemCount,
+            key = expenses.itemKey { expense -> expense.id },
+            contentType = expenses.itemContentType {"Expenses"}
+        ) { index ->
+            val expense = expenses[index]
+            if (expense != null) {
+                ExpenseListItem(
+                    expense = expense,
+                    onClickExpense = { onExpenseClick(expense) },
+                    onClickDelete = onDeleteClick
+                )
             }
-        ) { expense ->
-            ExpenseListItem(
-                expense = expense,
-                onClickExpense = { onExpenseClick(expense) },
-                onClickDelete = onDeleteClick
-            )
         }
     }
 }

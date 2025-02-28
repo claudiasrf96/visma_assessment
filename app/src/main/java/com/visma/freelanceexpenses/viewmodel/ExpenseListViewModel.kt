@@ -4,6 +4,11 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.cachedIn
 import com.visma.freelanceexpenses.core.domain.model.Expense
 import com.visma.freelanceexpenses.core.domain.repository.ExpenseRepository
 import com.visma.freelanceexpenses.view.expense_list.ExpenseListEvent
@@ -32,8 +37,6 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
     private val _state = mutableStateOf(ExpenseListState())
     val state : State<ExpenseListState> = _state
 
-    private var getExpensesJob: Job? = null
-
     init {
         getExpenses(_sortType.value)
     }
@@ -56,15 +59,22 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
     }
 
     private fun getExpenses(sortType: SortType) {
-        getExpensesJob?.cancel()
-        getExpensesJob = mapExpenseList(sortType)
-            .onEach { expenses ->
-                _state.value = state.value.copy(
-                    expenses = expenses,
-                    sortType = sortType
-                )
+        val expensesPager =  Pager(
+            PagingConfig(
+                pageSize = 25,
+                prefetchDistance = 50
+            )
+        ) {
+            when(sortType) {
+                SortType.DATE -> repository.getExpensesOrderByDatePaged()
+                SortType.NAME -> repository.getExpensesOrderByNamePaged()
+                SortType.TOTAL -> repository.getExpensesOrderByTotalPaged()
             }
-            .launchIn(viewModelScope)
+        }.flow
+
+        _state.value = _state.value.copy(expenses = expensesPager, sortType = sortType)
+
+
 
         /*val expenses = listOf(
             Expense(name = "My expense", currency = "EUR", total = 250.5, date = "2025-01-25", category = 0, id = 1),
@@ -75,15 +85,5 @@ class ExpenseListViewModel @Inject constructor(private val repository: ExpenseRe
             expenses = expenses,
             sortType = sortType
         )*/
-    }
-
-    private fun mapExpenseList(sortType: SortType) : Flow<List<Expense>> {
-        return repository.getExpenses().map { expenses ->
-            when(sortType){
-                SortType.DATE -> expenses.sortedBy { it.date }
-                SortType.NAME -> expenses.sortedBy { it.name }
-                SortType.TOTAL -> expenses.sortedBy { it.total }
-            }
-        }
     }
 }
