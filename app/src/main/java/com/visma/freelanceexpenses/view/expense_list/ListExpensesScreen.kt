@@ -8,10 +8,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -26,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
@@ -79,32 +83,23 @@ fun ListExpensesScreen(
             color = DesertWhite
         ){
             Column {
-                Text(text = stringResource(id = R.string.welcome),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface)
-                Spacer(modifier = Modifier.height(20.dp))
+                Text(
+                    text = stringResource(id = R.string.welcome),
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(vertical = 32.dp)
+                )
                 Row (verticalAlignment = Alignment.CenterVertically,
-                    modifier =  Modifier.fillMaxWidth()){
-                    IconButton(
+                    modifier =  Modifier.fillMaxWidth().padding(horizontal = 15.dp)){
+                    Button(
                         onClick = { onAddClick() },
                         modifier = Modifier
-                            .background(SandYellow)
-                            .border(
-                                width = 1.dp,
-                                SandYellow,
-                                shape = RoundedCornerShape(
-                                    topStart = 32.dp,
-                                    topEnd = 32.dp,
-                                    bottomEnd = 32.dp,
-                                    bottomStart = 32.dp
-                                )
-                            )
+                            .fillMaxWidth(0.5f)
+                            .padding(bottom = 25.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_add),
-                            contentDescription = "Add expense")
+                        Text(text = stringResource(id = R.string.add_expense))
                     }
-                    Spacer(modifier = Modifier.width(5.dp))
+                    Spacer(modifier = Modifier.fillMaxWidth(0.2f))
                     Column(modifier = Modifier.requiredHeight(70.dp)) {
                         Text(text = stringResource(id = R.string.order_by))
                         Spacer(modifier = Modifier.height(10.dp))
@@ -114,15 +109,16 @@ fun ListExpensesScreen(
                                 selectedSortTypeIndex = index
                                 onEvent(ExpenseListEvent.SortExpenses(getSortType(index)))
                                 },
-                            modifier = Modifier.requiredHeight(50.dp))
+                            modifier = Modifier.fillMaxWidth(0.5f))
                     }
 
                     Spacer(modifier = Modifier.width(5.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 if (expensesLazyPageItems.itemCount == 0) {
-                    Text(text = stringResource(id = R.string.no_expenses),
-                        style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        text = stringResource(id = R.string.no_expenses),
+                        style = MaterialTheme.typography.titleLarge, )
                 } else {
                     ExpenseList(expenses = expensesLazyPageItems,
                         onExpenseClick = { onExpenseClick(it)},

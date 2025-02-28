@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -46,10 +46,10 @@ fun AppDropdown(
             topEnd = 5.dp,
             bottomEnd = 5.dp,
             bottomStart = 5.dp
-        )
-    ).padding(all = 15.dp)) {
+        ))
+        .requiredHeight(30.dp)) {
         Row(
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .clickable {
@@ -57,6 +57,7 @@ fun AppDropdown(
                 }
         ) {
             Text(itemsList[selectedPosition],
+                modifier = Modifier.padding(5.dp),
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface)
@@ -70,8 +71,7 @@ fun AppDropdown(
             expanded = isDropDownExpanded,
             onDismissRequest = {
                 isDropDownExpanded = false
-            }, modifier = Modifier.fillMaxWidth()
-                .background(Color.White)
+            }, modifier = modifier.background(Color.White)
         ) {
             itemsList.forEachIndexed { index, item ->
                 DropdownMenuItem(text = {

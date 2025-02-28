@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -55,6 +56,7 @@ import com.visma.freelanceexpenses.core.app.ArgumentNames
 import com.visma.freelanceexpenses.core.data.ExpenseCategory
 import com.visma.freelanceexpenses.core.data.currencyIndex
 import com.visma.freelanceexpenses.core.data.currencyList
+import com.visma.freelanceexpenses.ui.theme.Green
 import com.visma.freelanceexpenses.ui.theme.SandYellow
 import com.visma.freelanceexpenses.view.components.AppDropdown
 import com.visma.freelanceexpenses.view.components.DatePickerModal
@@ -206,8 +208,8 @@ fun UpsertExpenseScreen(
                     contentScale = ContentScale.Crop
                 )
             }
-
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally),
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(modifier = Modifier.fillMaxWidth(),
                 onClick = { onClickAddPhoto() }) {
                 Text(
                     text = stringResource(id = R.string.add_expense_invoice_photo),
@@ -216,7 +218,12 @@ fun UpsertExpenseScreen(
 
 
             Spacer(modifier = Modifier.height(30.dp))
-            Button(modifier = Modifier.align(Alignment.CenterHorizontally), onClick = {
+            Button(modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Green, // White background
+                    contentColor = Color.Black  // Black text color
+                ),
+                onClick = {
                 viewModel.onEvent(ExpenseUpsertEvent.SaveExpense)
                 navController.navigateUp()
             }) {
