@@ -212,7 +212,8 @@ fun UpsertExpenseScreen(
             Button(modifier = Modifier.fillMaxWidth(),
                 onClick = { onClickAddPhoto() }) {
                 Text(
-                    text = stringResource(id = R.string.add_expense_invoice_photo),
+                    text = stringResource(id = if (viewModel.imageLocation.value == null)
+                        R.string.add_expense_invoice_photo else R.string.replace_expense_invoice_photo),
                     color = Color.White)
             }
 
